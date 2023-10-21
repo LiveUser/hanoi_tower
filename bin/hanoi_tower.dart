@@ -95,28 +95,34 @@ void solveRecursively({
         int diskOnStartingTower = getDiskOnTop(startingTower) ?? 0;
         int diskOnTargetTower = getDiskOnTop(targetTower) ?? 0;
         int diskOnAuxTower = getDiskOnTop(auxTower) ?? 0;
-        bool invertOperation = !((numberOfDisks % 3) == 0);
-        if(diskOnStartingTower == 0){
+        bool isEven = !((numberOfDisks % 3) == 0);
+        if(diskOnStartingTower == numberOfDisks){
             lastPiecePlaced = true;
         }
-        if(invertOperation == false){
-            if(canStack(diskOnStartingTower, targetTower) && !lastPiecePlaced){
+        //print("Last piece: $lastPiecePlaced");
+        if(isEven == false){
+            if(lastPiecePlaced == false){
+              if(canStack(diskOnStartingTower, targetTower)){
                 moveDisk(startingTower, targetTower);
-            }else if(canStack(diskOnStartingTower, auxTower) && !lastPiecePlaced){
+              }else if(canStack(diskOnStartingTower, auxTower)){
                 moveDisk(startingTower, auxTower);
+              }else{
+                //Do nothing
+              }
             }else{
-                if(canStack(diskOnTargetTower, auxTower) && !lastPiecePlaced){
-                    moveDisk(targetTower, auxTower);
-                }else if(canStack(diskOnAuxTower, startingTower)){
-                    moveDisk(auxTower, startingTower);
-                }else if(diskOnAuxTower != 0){
-                    moveDisk(auxTower, targetTower);
-                }else{
-                    moveDisk(startingTower, targetTower);
-                }
+              if(canStack(diskOnStartingTower, targetTower) && diskOnStartingTower > diskOnAuxTower){
+                moveDisk(startingTower, targetTower);
+              }else if(canStack(diskOnTargetTower, auxTower)){
+                moveDisk(targetTower, auxTower);
+              }else if(canStack(diskOnAuxTower, startingTower)){
+                moveDisk(auxTower, startingTower);
+              }else{
+                //Do nothing
+                moveDisk(auxTower, targetTower);
+              }
             }
         }else{
-
+          
         }
     }
 }
