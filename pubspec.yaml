@@ -1,5 +1,5 @@
 name: hanoi_tower
-description: A sample command-line application.
+description: A simple Hanoi Tower Solver
 version: 1.0.0
 # repository: https://github.com/my_org/my_repo
 

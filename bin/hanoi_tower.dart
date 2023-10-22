@@ -1,11 +1,16 @@
 import 'dart:io';
-import 'dart:math';
 
-List<int> A = [];
-List<int> B = [];
-List<int> C = [];
-
-bool canStack(int diskNumber, String targetTower){
+class HanoiTower{
+  HanoiTower({
+    required this.A,
+    required this.B,
+    required this.C,
+  });
+  final List<int> A;
+  final List<int> B;
+  final List<int> C;
+}
+bool canStack(int diskNumber, String targetTower, List<int> A, List<int> B, List<int> C){
     if(diskNumber == 0){
         return false;
     }else{
@@ -46,7 +51,7 @@ bool canStack(int diskNumber, String targetTower){
     }
 }
 
-void moveDisk(String fromColumn, String toColumn){
+HanoiTower moveDisk(String fromColumn, String toColumn, List<int> A, List<int> B, List<int> C){
     int disk = 0;
     //Extract value and remove element
     if(fromColumn == "A"){
@@ -72,9 +77,10 @@ void moveDisk(String fromColumn, String toColumn){
     }
     //Print movement
     print("$disk$fromColumn -> $disk$toColumn");
+    return HanoiTower(A: A, B: B, C: C);
 }
 
-int? getDiskOnTop(String column){
+int? getDiskOnTop(String column, List<int> A, List<int> B, List<int> C){
     if(column == "A"){
         return A.lastOrNull;
     }else if(column == "B"){
@@ -83,48 +89,40 @@ int? getDiskOnTop(String column){
         return C.lastOrNull;
     }
 }
-void solveRecursively({
+//https://www.freecodecamp.org/news/analyzing-the-algorithm-to-solve-the-tower-of-hanoi-problem-686685f032e3/
+HanoiTower solveRecursively({
     required String startingTower,
     required String targetTower,
     required String auxTower,
     required int numberOfDisks,
+    required HanoiTower hanoiTower,
 }){
-    int stepsToSolve = (pow(2, numberOfDisks) - 1).round();
-    bool lastPiecePlaced = false;
-    for(int i = 0; i < stepsToSolve; i++){
-        int diskOnStartingTower = getDiskOnTop(startingTower) ?? 0;
-        int diskOnTargetTower = getDiskOnTop(targetTower) ?? 0;
-        int diskOnAuxTower = getDiskOnTop(auxTower) ?? 0;
-        bool isEven = !((numberOfDisks % 3) == 0);
-        if(diskOnStartingTower == numberOfDisks){
-            lastPiecePlaced = true;
-        }
-        //print("Last piece: $lastPiecePlaced");
-        if(isEven == false){
-            if(lastPiecePlaced == false){
-              if(canStack(diskOnStartingTower, targetTower)){
-                moveDisk(startingTower, targetTower);
-              }else if(canStack(diskOnStartingTower, auxTower)){
-                moveDisk(startingTower, auxTower);
-              }else{
-                //Do nothing
-              }
-            }else{
-              if(canStack(diskOnStartingTower, targetTower) && diskOnStartingTower > diskOnAuxTower){
-                moveDisk(startingTower, targetTower);
-              }else if(canStack(diskOnTargetTower, auxTower)){
-                moveDisk(targetTower, auxTower);
-              }else if(canStack(diskOnAuxTower, startingTower)){
-                moveDisk(auxTower, startingTower);
-              }else{
-                //Do nothing
-                moveDisk(auxTower, targetTower);
-              }
-            }
-        }else{
-          
-        }
+    //int stepsToSolve = (pow(2, numberOfDisks) - 1).round();
+    if(numberOfDisks == 1){
+      HanoiTower moveBottomDisk = moveDisk(startingTower, targetTower, hanoiTower.A, hanoiTower.B, hanoiTower.C);
+      hanoiTower = moveBottomDisk;
+    }else{
+      HanoiTower solvedSection = solveRecursively(
+          startingTower: startingTower, 
+          targetTower: auxTower, 
+          numberOfDisks: numberOfDisks - 1,
+          auxTower: targetTower,
+          hanoiTower: hanoiTower,
+      );
+      hanoiTower = solvedSection;
+      HanoiTower moveBottomDisk = moveDisk(startingTower, targetTower, hanoiTower.A, hanoiTower.B, hanoiTower.C);
+      hanoiTower = moveBottomDisk;
+      HanoiTower solvedSection2 = solveRecursively(
+          startingTower: auxTower,
+          targetTower: targetTower, 
+          numberOfDisks: numberOfDisks - 1,
+          auxTower: startingTower,
+          hanoiTower: hanoiTower,
+      );
+      hanoiTower = solvedSection2;
     }
+
+    return hanoiTower;
 }
 void generateAndSolve({
     required String startingTower,
@@ -132,6 +130,9 @@ void generateAndSolve({
     required int numberOfDisks,
 }){
     String auxTower = "";
+    List<int> A = [];
+    List<int> B = [];
+    List<int> C = [];
     //Stack disks on the starting tower
     if(startingTower == "A"){
         for(int i = 1; i <= numberOfDisks; i++){
@@ -166,10 +167,15 @@ void generateAndSolve({
     }
     //Solve the tower
     solveRecursively(
-        startingTower: startingTower, 
-        targetTower: targetTower, 
-        numberOfDisks: numberOfDisks,
-        auxTower: auxTower,
+      startingTower: startingTower, 
+      targetTower: targetTower, 
+      numberOfDisks: numberOfDisks,
+      auxTower: auxTower,
+      hanoiTower: HanoiTower(
+        A: A, 
+        B: B, 
+        C: C,
+      ),
     );
 }
 
@@ -233,6 +239,8 @@ void runSolver(){
         numberOfDisks: numberOfDisks,
     );
 }
-void main() {
+void main() async {
     runSolver();
+    //Pause the app to prevent exit
+    await Process.start("PAUSE", [], runInShell: true);
 }
